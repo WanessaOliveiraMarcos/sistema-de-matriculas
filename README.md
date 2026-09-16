@@ -70,3 +70,5 @@ US09: Como um usuário do sistema, quero realizar o login informando minhas cred
 AC25 - O sistema deve permitir o acesso apenas após a inserção de e-mail/usuário e senha corretos, redirecionando o usuário para o painel correspondente ao seu perfil (Secretário, Professor ou Aluno).
 AC26 - O sistema deve bloquear temporariamente a conta após 3 tentativas consecutivas de login com senha incorreta.
 
+## Diagrama de Caso de Uso
+![Diagrama de Caso de Uso](./docs/DiagramaV1.jpg)
