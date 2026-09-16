@@ -72,3 +72,6 @@ AC26 - O sistema deve bloquear temporariamente a conta após 3 tentativas consec
 
 ## Diagrama de Caso de Uso
 ![Diagrama de Caso de Uso](./docs/DiagramaV1.jpg)
+
+## Manutenções necessárias
+
