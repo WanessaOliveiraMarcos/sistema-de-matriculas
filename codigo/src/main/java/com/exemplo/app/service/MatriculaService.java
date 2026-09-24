@@ -12,6 +12,7 @@ import com.exemplo.app.dto.MatriculaRequest;
 import com.exemplo.app.model.Aluno;
 import com.exemplo.app.model.Matricula;
 import com.exemplo.app.model.Turma;
+import com.exemplo.app.model.enums.StatusAluno;
 import com.exemplo.app.model.enums.StatusMatricula;
 import com.exemplo.app.model.enums.TipoMatricula;
 import com.exemplo.app.repository.MatriculaRepository;
@@ -53,16 +54,22 @@ public class MatriculaService {
             throw new IllegalStateException("Aluno já matriculado nesta turma");
         }
 
+        // O tipo (obrigatória/optativa) é definido pela secretaria na disciplina
+        TipoMatricula tipo = turma.getDisciplina().getTipoMatricula();
+        if (tipo == null) {
+            throw new IllegalStateException("A disciplina ainda não possui tipo definido pela secretaria");
+        }
+
         long jaMatriculadas = matriculaRepository.countByAlunoCodigoAndTurmaSemestreCodigoAndTipoMatriculaAndStatusMatricula(
-                aluno.getCodigo(), turma.getSemestre().getCodigo(), request.tipoMatricula(), StatusMatricula.ATIVA);
-        int limite = request.tipoMatricula() == TipoMatricula.OBRIGATORIA ? MAX_OBRIGATORIAS : MAX_OPTATIVAS;
+                aluno.getCodigo(), turma.getSemestre().getCodigo(), tipo, StatusMatricula.ATIVA);
+        int limite = tipo == TipoMatricula.OBRIGATORIA ? MAX_OBRIGATORIAS : MAX_OPTATIVAS;
         if (jaMatriculadas >= limite) {
             throw new IllegalStateException("Limite de " + limite + " disciplinas "
-                    + request.tipoMatricula().name().toLowerCase() + "s atingido no semestre");
+                    + tipo.name().toLowerCase() + "s atingido no semestre");
         }
 
         Matricula matricula = new Matricula();
-        matricula.setTipoMatricula(request.tipoMatricula());
+        matricula.setTipoMatricula(tipo);
         matricula.matricular(aluno, turma);
         return matriculaRepository.save(matricula);
     }
@@ -72,6 +79,9 @@ public class MatriculaService {
         Matricula matricula = buscar(codigo);
         if (matricula.getStatusMatricula() == StatusMatricula.INATIVA) {
             throw new IllegalStateException("Matrícula já cancelada");
+        }
+        if (matricula.getAluno().getStatus() != StatusAluno.ATIVO) {
+            throw new IllegalStateException("Apenas alunos ativos podem cancelar matrículas");
         }
         if (!matricula.getTurma().getSemestre().periodoMatriculaAberto(LocalDate.now())) {
             throw new IllegalStateException("Cancelamento permitido apenas durante o período de matrículas");

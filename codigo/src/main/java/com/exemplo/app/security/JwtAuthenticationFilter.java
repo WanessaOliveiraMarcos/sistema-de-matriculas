@@ -21,6 +21,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    // Nome do cookie que guarda o JWT das páginas renderizadas no servidor
+    public static final String COOKIE_NAME = "AUTH_TOKEN";
+
     private static final String PREFIXO = "Bearer ";
 
     private final TokenService tokenService;
@@ -29,9 +32,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (header != null && header.startsWith(PREFIXO)) {
-            tokenService.validar(header.substring(PREFIXO.length()))
+        String token = extrairToken(request);
+        if (token != null) {
+            tokenService.validar(token)
                     .flatMap(usuarioRepository::findByEmail)
                     .ifPresent(usuario -> {
                         var authentication = new UsernamePasswordAuthenticationToken(usuario, null,
@@ -40,5 +43,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     });
         }
         chain.doFilter(request, response);
+    }
+
+    private String extrairToken(HttpServletRequest request) {
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (header != null && header.startsWith(PREFIXO)) {
+            return header.substring(PREFIXO.length());
+        }
+        if (request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                if (COOKIE_NAME.equals(cookie.getName()) && cookie.getValue() != null && !cookie.getValue().isBlank()) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
     }
 }

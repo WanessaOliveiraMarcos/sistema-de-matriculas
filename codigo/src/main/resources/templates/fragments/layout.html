@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+
+<!-- Cabeçalho comum das páginas -->
+<head th:fragment="head(nomePagina)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${nomePagina}">Sistema de Matrículas</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+
+<!-- Navbar comum das áreas autenticadas -->
+<nav class="navbar" th:fragment="navbar(nome, destino)">
+    <div class="container">
+        <a th:href="${destino}" class="navbar-brand" th:text="${nome}">Sistema de Matrículas</a>
+        <div class="navbar-actions">
+            <span class="navbar-user" th:text="'Olá, ' + ${nomeUsuario}"></span>
+            <a class="btn-logout" th:href="@{/logout}">Sair</a>
+        </div>
+    </div>
+</nav>
+
+</html>

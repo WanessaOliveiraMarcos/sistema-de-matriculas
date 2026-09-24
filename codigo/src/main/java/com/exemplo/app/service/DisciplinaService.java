@@ -36,6 +36,7 @@ public class DisciplinaService {
     public Disciplina atualizar(Integer codigo, Disciplina dados) {
         Disciplina disciplina = buscar(codigo);
         disciplina.setNome(dados.getNome());
+        disciplina.setTipoMatricula(dados.getTipoMatricula());
         return disciplina;
     }
 

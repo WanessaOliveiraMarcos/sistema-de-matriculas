@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Painel do Professor - Sistema de Matrículas')}"></head>
+<body>
+    <nav th:replace="~{fragments/layout :: navbar('Professor - Sistema de Matrículas', '/professor')}"></nav>
+
+    <main class="container main">
+        <h3 class="page-title">Minhas Turmas</h3>
+
+        <div th:if="${#lists.isEmpty(turmas)}" class="alert alert-info">
+            Você não possui turmas atribuídas no momento.
+        </div>
+
+        <div class="card" th:each="tc : ${turmas}">
+            <div class="card-header card-header-blue">
+                Turma #<span th:text="${tc.turma.codigo}"></span>
+                - Disciplina: <strong th:text="${tc.turma.disciplina.nome}"></strong>
+                | Semestre: <strong th:text="${tc.turma.semestre.ano} + '.' + ${tc.turma.semestre.semestre}"></strong>
+                | Matriculados: <span th:text="${tc.turma.quantidadeMatriculados}"></span>/60
+            </div>
+            <div class="card-body">
+                <h5 class="card-subtitle">
+                    Alunos Matriculados (<span th:text="${#lists.size(tc.alunos)}"></span>)
+                </h5>
+                <p th:if="${#lists.isEmpty(tc.alunos)}" class="empty-note">
+                    Nenhum aluno matriculado nesta turma.
+                </p>
+                <div th:unless="${#lists.isEmpty(tc.alunos)}" class="table-wrap">
+                    <table class="table">
+                        <thead>
+                            <tr><th>ID</th><th>Nome</th><th>E-mail</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="a : ${tc.alunos}">
+                                <td th:text="${a.codigo}"></td>
+                                <td th:text="${a.nome}"></td>
+                                <td th:text="${a.email}"></td>
+                                <td th:text="${a.status}"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

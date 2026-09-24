@@ -3,6 +3,7 @@ package com.exemplo.app.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,10 +13,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.exemplo.app.dto.TurmaRequest;
 import com.exemplo.app.model.Aluno;
 import com.exemplo.app.model.Turma;
+import com.exemplo.app.model.Usuario;
 import com.exemplo.app.service.TurmaService;
 
 import jakarta.validation.Valid;
@@ -39,7 +42,18 @@ public class TurmaController {
     }
 
     @GetMapping("/{codigo}/alunos")
-    public List<Aluno> listarAlunos(@PathVariable Integer codigo) {
+    public List<Aluno> listarAlunos(@PathVariable Integer codigo, Authentication authentication) {
+        // Professor só pode ver alunos das turmas que ele mesmo leciona
+        if (authentication != null
+                && authentication.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_PROFESSOR"))) {
+            Turma turma = turmaService.buscar(codigo);
+            Usuario logado = (Usuario) authentication.getPrincipal();
+            if (!turma.getProfessor().getCodigo().equals(logado.getCodigo())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Professor só pode consultar alunos das próprias turmas");
+            }
+        }
         return turmaService.listarAlunos(codigo);
     }
 

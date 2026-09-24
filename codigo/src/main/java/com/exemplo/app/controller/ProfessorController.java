@@ -3,6 +3,7 @@ package com.exemplo.app.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,9 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.exemplo.app.model.Professor;
 import com.exemplo.app.model.Turma;
+import com.exemplo.app.model.Usuario;
 import com.exemplo.app.service.ProfessorService;
 
 import jakarta.validation.Valid;
@@ -38,7 +41,15 @@ public class ProfessorController {
     }
 
     @GetMapping("/{codigo}/turmas")
-    public List<Turma> listarTurmas(@PathVariable Integer codigo) {
+    public List<Turma> listarTurmas(@PathVariable Integer codigo, Authentication authentication) {
+        // Professor só pode consultar as próprias turmas (não basta estar autenticado)
+        if (isProfessor(authentication)) {
+            Usuario logado = (Usuario) authentication.getPrincipal();
+            if (!logado.getCodigo().equals(codigo)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "Professor só pode consultar as próprias turmas");
+            }
+        }
         return professorService.listarTurmas(codigo);
     }
 
@@ -57,5 +68,11 @@ public class ProfessorController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void remover(@PathVariable Integer codigo) {
         professorService.remover(codigo);
+    }
+
+    private boolean isProfessor(Authentication authentication) {
+        return authentication != null
+                && authentication.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_PROFESSOR"));
     }
 }

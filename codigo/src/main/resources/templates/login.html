@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Login - Sistema de Matrículas')}"></head>
+<body class="auth-body">
+    <div class="auth-card">
+        <h3 class="auth-title">Sistema de Matrículas</h3>
+        <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+        <form th:action="@{/login}" method="post">
+            <div class="form-group">
+                <label for="email" class="form-label">E-mail</label>
+                <input type="email" class="form-input" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="senha" class="form-label">Senha</label>
+                <input type="password" class="form-input" id="senha" name="senha" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -3,9 +3,12 @@ package com.exemplo.app.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.exemplo.app.model.enums.TipoMatricula;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,6 +32,10 @@ public class Disciplina {
 
     @NotBlank
     private String nome;
+
+    // Tipo definido pela secretaria: obrigatória ou optativa
+    @Enumerated(EnumType.STRING)
+    private TipoMatricula tipoMatricula;
 
     @JsonIgnore
     @ManyToOne

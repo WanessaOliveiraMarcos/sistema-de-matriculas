@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Painel do Aluno - Sistema de Matrículas')}"></head>
+<body>
+    <nav th:replace="~{fragments/layout :: navbar('Aluno - Sistema de Matrículas', '/aluno')}"></nav>
+
+    <main class="container main">
+        <div th:if="${sucesso}" class="alert alert-success" th:text="${sucesso}"></div>
+        <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+
+        <div class="tabs" id="tabsBar">
+            <button type="button" data-target="matriculas" class="tab-btn active">Minhas Matrículas</button>
+            <button th:if="${podeMatricular}" type="button" data-target="disponiveis" class="tab-btn">Matricular-se em Turmas</button>
+        </div>
+
+        <!-- MINHAS MATRÍCULAS -->
+        <section id="matriculas" class="tab-panel">
+            <div class="card">
+                <div class="card-header">Minhas Matrículas (Ativas e Histórico)</div>
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead>
+                            <tr><th>ID</th><th>Disciplina</th><th>Semestre</th><th>Tipo</th><th>Status</th><th>Data</th><th>Ações</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="m : ${matriculas}">
+                                <td th:text="${m.codigo}"></td>
+                                <td th:text="${m.turma.disciplina.nome}"></td>
+                                <td th:text="${m.turma.semestre.ano} + '.' + ${m.turma.semestre.semestre}"></td>
+                                <td th:text="${m.tipoMatricula}"></td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${m.statusMatricula.name() == 'ATIVA' ? 'badge-success' : 'badge-muted'}"
+                                          th:text="${m.statusMatricula}"></span>
+                                </td>
+                                <td th:text="${m.data}"></td>
+                                <td>
+                                    <form th:if="${m.statusMatricula.name() == 'ATIVA' and podeMatricular}"
+                                          th:action="@{/aluno/cancelar}" method="post" class="form-inline">
+                                        <input type="hidden" name="matriculaCodigo" th:value="${m.codigo}">
+                                        <button type="submit" class="btn btn-danger btn-sm">Cancelar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(matriculas)}">
+                                <td colspan="7" class="empty-note">Você ainda não possui matrículas.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- MATRICULAR-SE -->
+        <section th:if="${podeMatricular}" id="disponiveis" class="tab-panel hidden">
+            <div class="card">
+                <div class="card-header">Turmas Disponíveis para Matrícula (período aberto)</div>
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead>
+                            <tr><th>ID</th><th>Disciplina</th><th>Tipo</th><th>Professor</th><th>Semestre</th><th>Vagas</th><th>Ação</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="t : ${turmas}">
+                                <td th:text="${t.codigo}"></td>
+                                <td th:text="${t.disciplina.nome}"></td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${t.disciplina.tipoMatricula.name() == 'OBRIGATORIA' ? 'badge-success' : 'badge-muted'}"
+                                          th:text="${t.disciplina.tipoMatricula}"></span>
+                                </td>
+                                <td th:text="${t.professor.nome}"></td>
+                                <td th:text="${t.semestre.ano} + '.' + ${t.semestre.semestre}"></td>
+                                <td th:text="${t.quantidadeMatriculados} + '/60'"></td>
+                                <td>
+                                    <form th:action="@{/aluno/matricular}" method="post" class="form-inline">
+                                        <input type="hidden" name="turmaCodigo" th:value="${t.codigo}">
+                                        <button type="submit" class="btn btn-primary btn-sm">Matricular</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(turmas)}">
+                                <td colspan="7" class="empty-note">Nenhuma turma com período de matrículas aberto.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Troca de abas (apenas apresentação; os dados já vêm renderizados do servidor) -->
+    <script>
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+                document.getElementById(btn.dataset.target).classList.remove('hidden');
+            });
+        });
+    </script>
+</body>
+</html>
