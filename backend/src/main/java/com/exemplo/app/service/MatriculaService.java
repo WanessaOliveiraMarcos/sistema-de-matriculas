@@ -1,0 +1,82 @@
+package com.exemplo.app.service;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import com.exemplo.app.dto.MatriculaRequest;
+import com.exemplo.app.model.Aluno;
+import com.exemplo.app.model.Matricula;
+import com.exemplo.app.model.Turma;
+import com.exemplo.app.model.enums.StatusMatricula;
+import com.exemplo.app.model.enums.TipoMatricula;
+import com.exemplo.app.repository.MatriculaRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class MatriculaService {
+
+    public static final int MAX_OBRIGATORIAS = 4;
+    public static final int MAX_OPTATIVAS = 2;
+
+    private final MatriculaRepository matriculaRepository;
+    private final AlunoService alunoService;
+    private final TurmaService turmaService;
+
+    public List<Matricula> listar() {
+        return matriculaRepository.findAll();
+    }
+
+    public Matricula buscar(Integer codigo) {
+        return matriculaRepository.findById(codigo)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Matrícula não encontrada"));
+    }
+
+    public List<Matricula> listarPorAluno(Integer alunoCodigo) {
+        alunoService.buscar(alunoCodigo);
+        return matriculaRepository.findByAlunoCodigo(alunoCodigo);
+    }
+
+    @Transactional
+    public Matricula matricular(MatriculaRequest request) {
+        Aluno aluno = alunoService.buscar(request.alunoCodigo());
+        Turma turma = turmaService.buscar(request.turmaCodigo());
+
+        if (matriculaRepository.existsByAlunoCodigoAndTurmaCodigoAndStatusMatricula(
+                aluno.getCodigo(), turma.getCodigo(), StatusMatricula.ATIVA)) {
+            throw new IllegalStateException("Aluno já matriculado nesta turma");
+        }
+
+        long jaMatriculadas = matriculaRepository.countByAlunoCodigoAndTurmaSemestreCodigoAndTipoMatriculaAndStatusMatricula(
+                aluno.getCodigo(), turma.getSemestre().getCodigo(), request.tipoMatricula(), StatusMatricula.ATIVA);
+        int limite = request.tipoMatricula() == TipoMatricula.OBRIGATORIA ? MAX_OBRIGATORIAS : MAX_OPTATIVAS;
+        if (jaMatriculadas >= limite) {
+            throw new IllegalStateException("Limite de " + limite + " disciplinas "
+                    + request.tipoMatricula().name().toLowerCase() + "s atingido no semestre");
+        }
+
+        Matricula matricula = new Matricula();
+        matricula.setTipoMatricula(request.tipoMatricula());
+        matricula.matricular(aluno, turma);
+        return matriculaRepository.save(matricula);
+    }
+
+    @Transactional
+    public Matricula cancelar(Integer codigo) {
+        Matricula matricula = buscar(codigo);
+        if (matricula.getStatusMatricula() == StatusMatricula.INATIVA) {
+            throw new IllegalStateException("Matrícula já cancelada");
+        }
+        if (!matricula.getTurma().getSemestre().periodoMatriculaAberto(LocalDate.now())) {
+            throw new IllegalStateException("Cancelamento permitido apenas durante o período de matrículas");
+        }
+        matricula.setStatusMatricula(StatusMatricula.INATIVA);
+        return matricula;
+    }
+}
