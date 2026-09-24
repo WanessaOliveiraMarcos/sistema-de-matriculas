@@ -75,3 +75,20 @@ AC26 - O sistema deve bloquear temporariamente a conta após 3 tentativas consec
 
 ## Manutenções necessárias
 
+Alterações solicitadas pelo Product Owner após cada sprint.
+
+### Sprint 2
+
+- **MAN01** – Aluno passa a ter status (Ativo, Trancado ou Formado). Impactou a classe `Aluno`, criou o enum `StatusAluno` e a US04.
+- **MAN02** – Sistema passa a guardar o histórico de disciplinas cursadas. Impactou a classe `Matricula` e a US06.
+- **MAN03** – Aluno passa a pertencer a um único curso e a turma passa a agregar alunos. Impactou as classes `Aluno`, `Curso` e `Turma`.
+- **MAN04** – Documentação da Sprint 1 mantida como V0. Impactou os diagramas da pasta `docs/`.
+
+### Sprint 3
+
+- **MAN05** – Professores e alunos passam a ser associados a turmas, e não a disciplinas. Impactou as classes `Professor`, `Aluno`, `Turma` e `Matricula` e as US01, US03, US06 e US07.
+- **MAN06** – Toda turma passa a pertencer a uma única disciplina. Impactou as classes `Turma` e `Disciplina`.
+- **MAN07** – Disciplina pode ter várias turmas independentes, com limite de 60 e mínimo de 3 alunos por turma. Impactou a classe `Turma` e o CA17.
+- **MAN08** – Histórico do aluno passa a registrar a turma de cada disciplina cursada. Impactou a classe `Matricula` e a US08.
+
+
