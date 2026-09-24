@@ -11,6 +11,7 @@
         <div class="tabs" id="tabsBar">
             <button type="button" data-target="matriculas" class="tab-btn active">Minhas Matrículas</button>
             <button th:if="${podeMatricular}" type="button" data-target="disponiveis" class="tab-btn">Matricular-se em Turmas</button>
+            <button type="button" data-target="notificacoes" class="tab-btn">Notificações</button>
         </div>
 
         <!-- MINHAS MATRÍCULAS -->
@@ -81,6 +82,38 @@
                             </tr>
                             <tr th:if="${#lists.isEmpty(turmas)}">
                                 <td colspan="7" class="empty-note">Nenhuma turma com período de matrículas aberto.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    <!-- NOTIFICAÇÕES -->
+        <section id="notificacoes" class="tab-panel hidden">
+            <div class="card">
+                <div class="card-header">Notificações</div>
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead>
+                            <tr><th>Data</th><th>Tipo</th><th>Mensagem</th><th>Status</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="n : ${notificacoes}">
+                                <td th:text="${#temporals.format(n.dataCriacao, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${n.tipo.name() == 'MATRICULA' ? 'badge-success' : 'badge-muted'}"
+                                          th:text="${n.tipo}"></span>
+                                </td>
+                                <td th:text="${n.mensagem}"></td>
+                                <td>
+                                    <span class="badge"
+                                          th:classappend="${n.status.name() == 'ENVIADA' ? 'badge-success' : 'badge-muted'}"
+                                          th:text="${n.status}"></span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(notificacoes)}">
+                                <td colspan="4" class="empty-note">Você ainda não possui notificações.</td>
                             </tr>
                         </tbody>
                     </table>

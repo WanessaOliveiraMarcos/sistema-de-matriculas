@@ -26,11 +26,13 @@ public class SecurityConfig {
                 // Logout tratado pela própria aplicação (limpa o cookie do JWT)
                 .logout(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                // O console H2 renderiza em <frame>; sem sameOrigin o browser bloqueia
+                .headers(h -> h.frameOptions(frame -> frame.sameOrigin()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         // Páginas públicas, estáticos e logout
                         .requestMatchers("/", "/login", "/logout", "/error", "/css/**", "/js/**", "/images/**",
-                                "/favicon.ico").permitAll()
+                                "/favicon.ico", "/h2-console/**").permitAll()
                         // Áreas por papel (usuário resolvido do JWT no cookie/header)
                         .requestMatchers("/secretaria/**").hasRole("SECRETARIO")
                         .requestMatchers("/professor/**").hasRole("PROFESSOR")

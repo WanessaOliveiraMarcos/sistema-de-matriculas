@@ -32,6 +32,7 @@ import com.exemplo.app.service.AlunoService;
 import com.exemplo.app.service.CursoService;
 import com.exemplo.app.service.DisciplinaService;
 import com.exemplo.app.service.MatriculaService;
+import com.exemplo.app.service.NotificacaoService;
 import com.exemplo.app.service.ProfessorService;
 import com.exemplo.app.service.SemestreService;
 import com.exemplo.app.service.TurmaService;
@@ -60,6 +61,7 @@ public class HomeController {
     private final AlunoService alunoService;
     private final ProfessorService professorService;
     private final MatriculaService matriculaService;
+    private final NotificacaoService notificacaoService;
 
     // ------------------------------------------------------------------
     // Login / Logout
@@ -232,6 +234,7 @@ public class HomeController {
                 .toList();
         model.addAttribute("nomeUsuario", usuario.getNome());
         model.addAttribute("turmas", dados);
+        model.addAttribute("notificacoes", notificacaoService.listarPorUsuario(usuario.getCodigo()));
         return "professor";
     }
 
@@ -290,6 +293,7 @@ public class HomeController {
         model.addAttribute("alunos", alunoService.listar());
         model.addAttribute("professores", professorService.listar());
         model.addAttribute("nomeUsuario", usuarioLogado().getNome());
+        model.addAttribute("notificacoes", notificacaoService.listarPorUsuario(usuarioLogado().getCodigo()));
     }
 
     private void preencherAluno(Model model) {
@@ -309,6 +313,7 @@ public class HomeController {
                     .toList();
         }
         model.addAttribute("turmas", turmas);
+        model.addAttribute("notificacoes", notificacaoService.listarPorUsuario(usuario.getCodigo()));
     }
 
     private String erroSecretaria(Model model, Exception ex) {
